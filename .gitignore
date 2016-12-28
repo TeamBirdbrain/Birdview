@@ -1,0 +1,29 @@
+# Emacs
+*~
+\#*\#
+.\#*
+
+# C++
+*.slo
+*.lo
+*.o
+*.a
+*.la
+*.lai
+*.so
+*.dll
+*.dylib
+
+# Qt
+/.qmake.cache
+/.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*
+qrc_*.cpp
+ui_*.h
+Makefile*
+*build-*
