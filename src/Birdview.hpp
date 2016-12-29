@@ -8,7 +8,12 @@
 #ifndef BIRDVIEW_HPP
 #define BIRDVIEW_HPP
 
+#include <QColor>
+#include <QString>
 #include <QWidget>
+#include <QTcpSocket>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 class Birdview : public QWidget
 {
@@ -17,6 +22,22 @@ class Birdview : public QWidget
 public:
     Birdview();
     ~Birdview();
+
+private:
+    bool connected();
+    void setConnected(bool);
+
+    QString deviceIP;
+    QTcpSocket deviceSocket;
+
+    QVBoxLayout* mainLayout;
+    QPushButton* connectionButton;
+
+    const QColor buttonRed{"#FF8589"};
+    const QColor buttonGreen{"#47B84B"};
+
+private slots:
+    void onConnectionButtonClicked();
 };
 
 #endif
