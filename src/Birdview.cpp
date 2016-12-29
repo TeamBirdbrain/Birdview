@@ -5,6 +5,8 @@
  * of the MIT license.  See the LICENSE file for details.
  */
 
+#include <iostream>
+
 #include <Qt>
 #include <QRect>
 #include <QStyle>
@@ -13,6 +15,7 @@
 #include <QDesktopWidget>
 
 #include "Birdview.hpp"
+#include "ConnectDialog.hpp"
 
 Birdview::Birdview()
 {
@@ -48,19 +51,26 @@ Birdview::Birdview()
     setConnected(false);
 }
 
-Birdview::~Birdview() { }
+Birdview::~Birdview()
+{
+    if (connected()) {
+        deviceSocket.disconnectFromHost();
+    }
+}
 
 bool Birdview::connected()
 {
-    return deviceSocket.isValid();
+    return deviceSocket.state() == QAbstractSocket::ConnectedState;
 }
 
 void Birdview::setConnected(bool state)
 {
     if (state) {
-
+        deviceIP = deviceSocket.peerName();
     } else {
-        deviceIP.clear();        
+        deviceIP.clear();
+        deviceSocket.disconnectFromHost();
+        std::cout << "Disconnected" << std::endl;
     }
 
     QString buttonText{state ? "Connected to " + deviceIP : "Disconnected"};
@@ -79,14 +89,9 @@ void Birdview::onConnectionButtonClicked()
     if (connected()) {
         setConnected(false);
     } else {
-        bool entered{false};
-        QString ip{QInputDialog::getText(this, "Connect to device",
-                                         "Enter IP address of device:",
-                                         QLineEdit::Normal, "", &entered,
-                                         Qt::Dialog, Qt::ImhFormattedNumbersOnly)};
-
-        if (entered) {
-
+        ConnectDialog getIpAddress(&deviceIP, &deviceSocket);
+        if (getIpAddress.exec() == QDialog::Accepted) {
+            setConnected(true);
         }
     }
 }

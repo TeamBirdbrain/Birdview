@@ -3,13 +3,15 @@
 ######################################################################
 
 QT += widgets network
-CONFIG += c++14
+# CONFIG += c++14
 TEMPLATE = app
 TARGET = Birdview
 INCLUDEPATH += .
 QMAKE_CXXFLAGS += -Wfatal-errors
 
 # Input
-HEADERS += src/Birdview.hpp
+HEADERS += src/Birdview.hpp \
+           src/ConnectDialog.hpp
 SOURCES += src/Birdview.cpp \
+           src/ConnectDialog.cpp \
            src/main.cpp

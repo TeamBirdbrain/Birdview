@@ -23,6 +23,8 @@ public:
     Birdview();
     ~Birdview();
 
+    static const int PORT = 1998;
+
 private:
     bool connected();
     void setConnected(bool);
