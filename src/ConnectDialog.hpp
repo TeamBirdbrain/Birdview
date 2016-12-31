@@ -46,7 +46,8 @@ private:
     QVBoxLayout* connectingLayout;
     QStackedLayout* widgetStack;
 
-    const int TIMEOUT_MILLIS = 10000;
+    unsigned int millisPassed;
+    const unsigned int TIMEOUT_MILLIS = 10000u;
 
 private slots:
     void onConnectButtonClicked();

@@ -12,6 +12,7 @@
 
 ConnectDialog::ConnectDialog(QString* ipAddress, QTcpSocket* socket)
 {
+    millisPassed = 0u;
     this->socket = socket;
     this->ipAddress = ipAddress;
 
@@ -61,11 +62,9 @@ void ConnectDialog::onConnectButtonClicked()
 {
     widgetStack->setCurrentIndex(1);
 
-    int millisPassed{0};
-
     connect(timer, &QTimer::timeout,
             [&] () {
-                if (socket->isValid()) {
+                if (socket->state() == QTcpSocket::ConnectedState) {
                     std::cout << "Connected" << std::endl;
                     timer->stop();
                     done(QDialog::Accepted);
