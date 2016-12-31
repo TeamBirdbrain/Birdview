@@ -49,6 +49,8 @@ Birdview::Birdview()
 
     // Start off in a disconnected state
     setConnected(false);
+    connect(&deviceSocket, static_cast<void(QTcpSocket::*)(QTcpSocket::SocketError)>(&QTcpSocket::error),
+            this, &Birdview::onSocketError);
 }
 
 Birdview::~Birdview()
@@ -66,8 +68,6 @@ bool Birdview::connected()
 void Birdview::setConnected(bool state)
 {
     if (state) {
-        connect(&deviceSocket, static_cast<void(QTcpSocket::*)(QTcpSocket::SocketError)>(&QTcpSocket::error),
-                this, &Birdview::onSocketError);
         deviceIP = deviceSocket.peerName();
     } else {
         deviceIP.clear();
@@ -92,6 +92,9 @@ void Birdview::onConnectionButtonClicked()
         setConnected(false);
     } else {
         ConnectDialog getIpAddress(&deviceIP, &deviceSocket);
+
+        // Note that the rejected case (when an error occurs) is handled by
+        // onSocketError()
         if (getIpAddress.exec() == QDialog::Accepted) {
             setConnected(true);
         }
