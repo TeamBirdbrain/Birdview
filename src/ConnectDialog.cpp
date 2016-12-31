@@ -7,8 +7,6 @@
 
 #include <iostream>
 
-#include <QTimer>
-
 #include "Birdview.hpp"
 #include "ConnectDialog.hpp"
 
@@ -17,7 +15,13 @@ ConnectDialog::ConnectDialog(QString* ipAddress, QTcpSocket* socket)
     this->socket = socket;
     this->ipAddress = ipAddress;
 
-    label = new QLabel("Enter IP address of mobile device:");
+    timer = new QTimer(this);
+    connectWidget = new QWidget;
+    connectingWidget = new QWidget;
+    widgetStack = new QStackedLayout;
+
+    connectLabel = new QLabel("Enter IP address of mobile device:");
+    connectingLabel = new QLabel("Connecting...");
 
     ipLineEdit = new QLineEdit;
     ipLineEdit->setPlaceholderText("IP address");
@@ -26,25 +30,38 @@ ConnectDialog::ConnectDialog(QString* ipAddress, QTcpSocket* socket)
     connect(connectButton, &QPushButton::clicked,
             this, &ConnectDialog::onConnectButtonClicked);
 
+    connectingBar = new QProgressBar;
+    connectingBar->setRange(0, 0);
+
     buttonLayout = new QHBoxLayout;
     buttonLayout->addStretch();
     buttonLayout->addWidget(connectButton);
     buttonLayout->addStretch();
 
-    mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(label);
-    mainLayout->addWidget(ipLineEdit);
-    mainLayout->addLayout(buttonLayout);
+    connectLayout = new QVBoxLayout;
+    connectLayout->addWidget(connectLabel);
+    connectLayout->addWidget(ipLineEdit);
+    connectLayout->addLayout(buttonLayout);
 
-    setLayout(mainLayout);
+    connectingLayout = new QVBoxLayout;
+    connectingLayout->addWidget(connectingLabel);
+    connectingLayout->addWidget(connectingBar);
+
+    connectWidget->setLayout(connectLayout);
+    connectingWidget->setLayout(connectingLayout);
+    widgetStack->addWidget(connectWidget);
+    widgetStack->addWidget(connectingWidget);
+
+    setLayout(widgetStack);
     setWindowTitle("Connect to Device");
     setWindowFlags(Qt::Dialog);
 }
 
 void ConnectDialog::onConnectButtonClicked()
 {
+    widgetStack->setCurrentIndex(1);
+
     int millisPassed{0};
-    QTimer* timer{new QTimer(this)};
 
     connect(socket, static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
             [&] (QAbstractSocket::SocketError) {
@@ -57,8 +74,8 @@ void ConnectDialog::onConnectButtonClicked()
     connect(timer, &QTimer::timeout,
             [&] () {
                 if (socket->isValid()) {
-                    timer->stop();
                     std::cout << "Connected" << std::endl;
+                    timer->stop();
                     done(QDialog::Accepted);
                 } else {
                     millisPassed += timer->interval();

@@ -73,8 +73,8 @@ void Birdview::setConnected(bool state)
         std::cout << "Disconnected" << std::endl;
     }
 
-    QString buttonText{state ? "Connected to " + deviceIP : "Disconnected"};
     QColor buttonColor{state ? buttonGreen : buttonRed};
+    QString buttonText{state ? "Connected to " + deviceIP : "Disconnected"};
 
     connectionButton->setText(buttonText);
     connectionButton->setStyleSheet("QPushButton { background-color: " + buttonColor.name() + ";"
