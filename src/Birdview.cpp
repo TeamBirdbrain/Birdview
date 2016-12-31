@@ -66,6 +66,8 @@ bool Birdview::connected()
 void Birdview::setConnected(bool state)
 {
     if (state) {
+        connect(&deviceSocket, static_cast<void(QTcpSocket::*)(QTcpSocket::SocketError)>(&QTcpSocket::error),
+                this, &Birdview::onSocketError);
         deviceIP = deviceSocket.peerName();
     } else {
         deviceIP.clear();
@@ -94,4 +96,10 @@ void Birdview::onConnectionButtonClicked()
             setConnected(true);
         }
     }
+}
+
+void Birdview::onSocketError(QAbstractSocket::SocketError error)
+{
+    setConnected(false);
+    connectionButton->setText("Disconnected: Socket error " + QString::number(error));
 }

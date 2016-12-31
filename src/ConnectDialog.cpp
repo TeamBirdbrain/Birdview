@@ -63,14 +63,6 @@ void ConnectDialog::onConnectButtonClicked()
 
     int millisPassed{0};
 
-    connect(socket, static_cast<void(QAbstractSocket::*)(QAbstractSocket::SocketError)>(&QAbstractSocket::error),
-            [&] (QAbstractSocket::SocketError) {
-                timer->stop();
-                std::cout << socket->errorString().toStdString() << std::endl;
-
-                done(QDialog::Rejected);
-            });
-
     connect(timer, &QTimer::timeout,
             [&] () {
                 if (socket->isValid()) {
@@ -81,8 +73,12 @@ void ConnectDialog::onConnectButtonClicked()
                     millisPassed += timer->interval();
 
                     if (millisPassed >= TIMEOUT_MILLIS) {
-                        timer->stop();
                         std::cout << "Timed out" << std::endl;
+                        timer->stop();
+                        done(QDialog::Rejected);
+                    } else if (socket->error() > -1) {
+                        std::cout << "Socket error: " << socket->error() << std::endl;
+                        timer->stop();
                         done(QDialog::Rejected);
                     }
                 }

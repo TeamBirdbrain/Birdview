@@ -39,6 +39,7 @@ private:
     const QColor buttonGreen{"#47B84B"};
 
 private slots:
+    void onSocketError(QTcpSocket::SocketError);
     void onConnectionButtonClicked();
 };
 
