@@ -69,9 +69,12 @@ void Birdview::setConnected(bool state)
 {
     if (state) {
         deviceIP = deviceSocket.peerName();
+        connect(&deviceSocket, &QTcpSocket::readyRead,
+                this, &Birdview::onDataReceived);
     } else {
         deviceIP.clear();
         deviceSocket.disconnectFromHost();
+        deviceSocket.disconnect();
         std::cout << "Disconnected" << std::endl;
     }
 
@@ -84,6 +87,39 @@ void Birdview::setConnected(bool state)
                                     "              padding: 1em 1em 1em 1em; }"
                                     "QPushButton:hover:!pressed { background-color: " + buttonColor.lighter(110).name() + "; }"
                                     "QPushButton:pressed { background-color: " + buttonColor.darker(120).name() + "; }");
+}
+
+template<typename T>
+T Birdview::bytesToNumeric(char* data)
+{
+    // TODO: Check for endianness, right now we assume that `data` is big endian
+    const std::size_t size{sizeof(T)};
+    union { char bytes[size]; T value; };
+    for (auto i{0u}; i < size; ++i) {
+        bytes[i] = data[size - i - 1];
+    }
+
+    return value;
+}
+
+void Birdview::onDataReceived()
+{
+    AccelerationStamp stamp;
+    char data[BUFFER_SIZE];
+    deviceSocket.read(data, BUFFER_SIZE);
+
+    stamp.x = bytesToNumeric<float>(data);
+    stamp.y = bytesToNumeric<float>(&(data[4]));
+    stamp.z = bytesToNumeric<float>(&(data[8]));
+    stamp.timestamp = bytesToNumeric<long long>(&(data[12]));
+
+    if (stamps.empty()) {
+        stamps.push_front(stamp);
+        lastStamp = stamps.begin();
+    } else {
+        stamps.insert_after(lastStamp, stamp);
+        ++lastStamp;
+    }
 }
 
 void Birdview::onConnectionButtonClicked()
