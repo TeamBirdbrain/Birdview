@@ -8,8 +8,10 @@
 #include <iostream>
 
 #include <Qt>
+#include <QFile>
 #include <QRect>
 #include <QStyle>
+#include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
 #include <QDesktopWidget>
@@ -100,6 +102,26 @@ T Birdview::bytesToNumeric(char* data)
     }
 
     return value;
+}
+
+bool Birdview::exportData(QString file)
+{
+    QFile outputFile{file};
+    if (!outputFile.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+
+    QTextStream outputTextstream{&outputFile};
+    outputTextstream << "timestamp x y z\n";
+
+    for (auto stamp : stamps) {
+        outputTextstream << stamp.timestamp << " "
+                         << stamp.x << " "
+                         << stamp.y << " "
+                         << stamp.z << "\n";
+    }
+
+    return true;
 }
 
 void Birdview::onDataReceived()

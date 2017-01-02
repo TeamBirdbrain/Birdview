@@ -37,6 +37,7 @@ public:
 
 private:
     bool connected();
+    bool exportData(QString);
     void setConnected(bool);
     template<typename T> T bytesToNumeric(char*);
 
