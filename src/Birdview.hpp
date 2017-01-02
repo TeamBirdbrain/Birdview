@@ -44,14 +44,12 @@ private:
     std::forward_list<AccelerationStamp> stamps;
     std::forward_list<AccelerationStamp>::iterator lastStamp;
 
-    QString deviceIP;
-    int deviceBufferSize;
-    QTcpSocket deviceSocket;
-
     QVBoxLayout* mainLayout;
     QPushButton* connectionButton;
 
-    const int BUFFER_SIZE = 3 * 4 + 8;
+    QString deviceIP;
+    QTcpSocket deviceSocket;
+    const int DEVICE_BUFFER_SIZE = 3 * 4 + 8;
 
     const QColor buttonRed{"#FF8589"};
     const QColor buttonGreen{"#47B84B"};

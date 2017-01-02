@@ -127,8 +127,8 @@ bool Birdview::exportData(QString file)
 void Birdview::onDataReceived()
 {
     AccelerationStamp stamp;
-    char data[BUFFER_SIZE];
-    deviceSocket.read(data, BUFFER_SIZE);
+    char data[DEVICE_BUFFER_SIZE];
+    deviceSocket.read(data, DEVICE_BUFFER_SIZE);
 
     stamp.x = bytesToNumeric<float>(data);
     stamp.y = bytesToNumeric<float>(&(data[4]));
