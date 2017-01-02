@@ -23,7 +23,6 @@ Birdview::Birdview()
 {
     // Create layouts
     mainLayout = new QVBoxLayout;
-    mainLayout->setAlignment(Qt::AlignHCenter);
 
     // Create widgets
     connectionButton = new QPushButton;
@@ -31,8 +30,18 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::onConnectionButtonClicked);
 
+    xs = new QCPDataMap;
+    plot = new QCustomPlot;
+    plot->addGraph();
+    plot->graph()->setData(xs);
+    plot->graph()->setAdaptiveSampling(true);
+    plot->xAxis->setLabel("Time");
+    plot->yAxis->setLabel("Acceleration");
+    plot->replot();
+
     // Pack layouts
     mainLayout->addWidget(connectionButton);
+    mainLayout->addWidget(plot);
 
     setLayout(mainLayout);
     setWindowTitle("Birdview");
@@ -92,7 +101,7 @@ void Birdview::setConnected(bool state)
 }
 
 template<typename T>
-T Birdview::bytesToNumeric(char* data)
+double Birdview::bytesToDouble(char* data)
 {
     // TODO: Check for endianness, right now we assume that `data` is big endian
     const std::size_t size{sizeof(T)};
@@ -101,7 +110,7 @@ T Birdview::bytesToNumeric(char* data)
         bytes[i] = data[size - i - 1];
     }
 
-    return value;
+    return static_cast<double>(value);
 }
 
 bool Birdview::exportData(QString file)
@@ -114,11 +123,11 @@ bool Birdview::exportData(QString file)
     QTextStream outputTextstream{&outputFile};
     outputTextstream << "timestamp x y z\n";
 
-    for (auto stamp : stamps) {
-        outputTextstream << stamp.timestamp << " "
-                         << stamp.x << " "
-                         << stamp.y << " "
-                         << stamp.z << "\n";
+    for (auto timestamp : xs->keys()) {
+        outputTextstream << timestamp << " "
+                         << xs->value(timestamp).value << " "
+                         << ys.value(timestamp).value << " "
+                         << zs.value(timestamp).value << "\n";
     }
 
     return true;
@@ -126,22 +135,28 @@ bool Birdview::exportData(QString file)
 
 void Birdview::onDataReceived()
 {
-    AccelerationStamp stamp;
     char data[DEVICE_BUFFER_SIZE];
     deviceSocket.read(data, DEVICE_BUFFER_SIZE);
 
-    stamp.x = bytesToNumeric<float>(data);
-    stamp.y = bytesToNumeric<float>(&(data[4]));
-    stamp.z = bytesToNumeric<float>(&(data[8]));
-    stamp.timestamp = bytesToNumeric<long long>(&(data[12]));
+    double x{bytesToDouble<float>(data)};
+    double y{bytesToDouble<float>(&(data[4]))};
+    double z{bytesToDouble<float>(&(data[8]))};
+    double timestamp{bytesToDouble<long long>(&(data[12]))};
 
-    if (stamps.empty()) {
-        stamps.push_front(stamp);
-        lastStamp = stamps.begin();
-    } else {
-        stamps.insert_after(lastStamp, stamp);
-        ++lastStamp;
+    xs->insert(timestamp, QCPData(timestamp, x));
+    ys.insert(timestamp, QCPData(timestamp, y));
+    zs.insert(timestamp, QCPData(timestamp, z));
+
+    if (x < currentMinY) {
+        currentMinY = x;
+    } else if (x > currentMaxY) {
+        currentMaxY = x;
     }
+
+    plot->xAxis->setRange(xs->isEmpty() ? timestamp : xs->firstKey(), timestamp);
+    plot->yAxis->setRange(currentMinY, currentMaxY);
+
+    plot->replot();
 }
 
 void Birdview::onConnectionButtonClicked()

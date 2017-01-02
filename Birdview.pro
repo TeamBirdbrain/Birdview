@@ -8,6 +8,8 @@ TEMPLATE = app
 TARGET = Birdview
 INCLUDEPATH += .
 QMAKE_CXXFLAGS += -Wfatal-errors
+DEFINES += QCUSTOMPLOT_USE_LIBRARY
+LIBS += -lqcustomplot-qt5
 
 # Input
 HEADERS += src/Birdview.hpp \

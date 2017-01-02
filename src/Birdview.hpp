@@ -8,7 +8,7 @@
 #ifndef BIRDVIEW_HPP
 #define BIRDVIEW_HPP
 
-#include <forward_list>
+#include <limits>
 
 #include <QColor>
 #include <QString>
@@ -16,14 +16,7 @@
 #include <QTcpSocket>
 #include <QPushButton>
 #include <QVBoxLayout>
-
-struct AccelerationStamp
-{
-    float x;
-    float y;
-    float z;
-    long long timestamp;
-};
+#include <qcustomplot.h>
 
 class Birdview : public QWidget
 {
@@ -39,11 +32,15 @@ private:
     bool connected();
     bool exportData(QString);
     void setConnected(bool);
-    template<typename T> T bytesToNumeric(char*);
+    template<typename T> double bytesToDouble(char*);
 
-    std::forward_list<AccelerationStamp> stamps;
-    std::forward_list<AccelerationStamp>::iterator lastStamp;
+    QCPDataMap* xs;
+    QCPDataMap ys;
+    QCPDataMap zs;
+    double currentMaxY{std::numeric_limits<double>::min()};
+    double currentMinY{std::numeric_limits<double>::max()};
 
+    QCustomPlot* plot;
     QVBoxLayout* mainLayout;
     QPushButton* connectionButton;
 
