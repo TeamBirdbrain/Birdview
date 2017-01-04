@@ -141,7 +141,7 @@ void Birdview::onDataReceived()
     double x{bytesToDouble<float>(data)};
     double y{bytesToDouble<float>(&(data[4]))};
     double z{bytesToDouble<float>(&(data[8]))};
-    double timestamp{bytesToDouble<long long>(&(data[12]))};
+    double timestamp{bytesToDouble<float>(&(data[12]))};
 
     xs.insert(timestamp, QCPData(timestamp, x));
     ys->insert(timestamp, QCPData(timestamp, y));

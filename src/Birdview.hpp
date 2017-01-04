@@ -46,7 +46,7 @@ private:
 
     QString deviceIP;
     QTcpSocket deviceSocket;
-    const int DEVICE_BUFFER_SIZE = 3 * 4 + 8;
+    const int DEVICE_BUFFER_SIZE = 4 * 4;
 
     const QColor buttonRed{"#FF8589"};
     const QColor buttonGreen{"#47B84B"};
