@@ -30,10 +30,10 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::onConnectionButtonClicked);
 
-    xs = new QCPDataMap;
+    ys = new QCPDataMap;
     plot = new QCustomPlot;
     plot->addGraph();
-    plot->graph()->setData(xs);
+    plot->graph()->setData(ys);
     plot->graph()->setAdaptiveSampling(true);
     plot->xAxis->setLabel("Time");
     plot->yAxis->setLabel("Acceleration");
@@ -123,10 +123,10 @@ bool Birdview::exportData(QString file)
     QTextStream outputTextstream{&outputFile};
     outputTextstream << "timestamp x y z\n";
 
-    for (auto timestamp : xs->keys()) {
+    for (auto timestamp : xs.keys()) {
         outputTextstream << timestamp << " "
-                         << xs->value(timestamp).value << " "
-                         << ys.value(timestamp).value << " "
+                         << xs.value(timestamp).value << " "
+                         << ys->value(timestamp).value << " "
                          << zs.value(timestamp).value << "\n";
     }
 
@@ -143,20 +143,18 @@ void Birdview::onDataReceived()
     double z{bytesToDouble<float>(&(data[8]))};
     double timestamp{bytesToDouble<long long>(&(data[12]))};
 
-    xs->insert(timestamp, QCPData(timestamp, x));
-    ys.insert(timestamp, QCPData(timestamp, y));
+    xs.insert(timestamp, QCPData(timestamp, x));
+    ys->insert(timestamp, QCPData(timestamp, y));
     zs.insert(timestamp, QCPData(timestamp, z));
 
-    if (x < currentMinY) {
-        currentMinY = x;
-    } else if (x > currentMaxY) {
-        currentMaxY = x;
+    if (y < currentMinY) {
+        currentMinY = y;
+    } else if (y > currentMaxY) {
+        currentMaxY = y;
     }
 
-    plot->xAxis->setRange(xs->isEmpty() ? timestamp : xs->firstKey(), timestamp);
+    plot->xAxis->setRange(ys->isEmpty() ? timestamp : ys->firstKey(), timestamp);
     plot->yAxis->setRange(currentMinY, currentMaxY);
-
-    plot->replot();
 }
 
 void Birdview::onConnectionButtonClicked()

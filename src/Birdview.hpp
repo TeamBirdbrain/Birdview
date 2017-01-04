@@ -34,8 +34,8 @@ private:
     void setConnected(bool);
     template<typename T> double bytesToDouble(char*);
 
-    QCPDataMap* xs;
-    QCPDataMap ys;
+    QCPDataMap xs;
+    QCPDataMap* ys;
     QCPDataMap zs;
     double currentMaxY{std::numeric_limits<double>::min()};
     double currentMinY{std::numeric_limits<double>::max()};
