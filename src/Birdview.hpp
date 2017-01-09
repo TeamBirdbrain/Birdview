@@ -14,6 +14,7 @@
 #include <QString>
 #include <QWidget>
 #include <QTcpSocket>
+#include <QUdpSocket>
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <qcustomplot.h>
@@ -32,7 +33,7 @@ private:
     bool connected();
     bool exportData(QString);
     void setConnected(bool);
-    template<typename T> double bytesToDouble(char*);
+    float bytesToFloat(char*);
 
     QCPDataMap xs;
     QCPDataMap* ys;
@@ -44,8 +45,10 @@ private:
     QVBoxLayout* mainLayout;
     QPushButton* connectionButton;
 
+    bool replot;
     QString deviceIP;
     QTcpSocket deviceSocket;
+    QUdpSocket deviceDataSocket;
     const int DEVICE_BUFFER_SIZE = 4 * 4;
 
     const QColor buttonRed{"#FF8589"};

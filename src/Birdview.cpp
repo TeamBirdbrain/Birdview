@@ -60,6 +60,7 @@ Birdview::Birdview()
 
     // Start off in a disconnected state
     setConnected(false);
+    replot = true;
     connect(&deviceSocket, static_cast<void(QTcpSocket::*)(QTcpSocket::SocketError)>(&QTcpSocket::error),
             this, &Birdview::onSocketError);
 }
@@ -80,12 +81,14 @@ void Birdview::setConnected(bool state)
 {
     if (state) {
         deviceIP = deviceSocket.peerName();
-        connect(&deviceSocket, &QTcpSocket::readyRead,
+        connect(&deviceDataSocket, &QUdpSocket::readyRead,
                 this, &Birdview::onDataReceived);
+        deviceDataSocket.bind(QHostAddress::Any, PORT);
     } else {
         deviceIP.clear();
         deviceSocket.disconnectFromHost();
         deviceSocket.disconnect();
+        deviceDataSocket.close();
         std::cout << "Disconnected" << std::endl;
     }
 
@@ -100,17 +103,16 @@ void Birdview::setConnected(bool state)
                                     "QPushButton:pressed { background-color: " + buttonColor.darker(120).name() + "; }");
 }
 
-template<typename T>
-double Birdview::bytesToDouble(char* data)
+float Birdview::bytesToFloat(char* data)
 {
-    // TODO: Check for endianness, right now we assume that `data` is big endian
-    const std::size_t size{sizeof(T)};
-    union { char bytes[size]; T value; };
+    // Note that `data` is big endian (network byte order)
+    const std::size_t size{sizeof(float)};
+    union { char bytes[size]; float value; };
     for (auto i{0u}; i < size; ++i) {
         bytes[i] = data[size - i - 1];
     }
 
-    return static_cast<double>(value);
+    return value;
 }
 
 bool Birdview::exportData(QString file)
@@ -135,26 +137,35 @@ bool Birdview::exportData(QString file)
 
 void Birdview::onDataReceived()
 {
-    char data[DEVICE_BUFFER_SIZE];
-    deviceSocket.read(data, DEVICE_BUFFER_SIZE);
+    while (deviceDataSocket.hasPendingDatagrams()) {
+        QByteArray datagram;
+        datagram.resize(deviceDataSocket.pendingDatagramSize());
+        deviceDataSocket.readDatagram(datagram.data(), datagram.size());
 
-    double x{bytesToDouble<float>(data)};
-    double y{bytesToDouble<float>(&(data[4]))};
-    double z{bytesToDouble<float>(&(data[8]))};
-    double timestamp{bytesToDouble<float>(&(data[12]))};
+        double x{bytesToFloat(datagram.data())};
+        double y{bytesToFloat(datagram.data() + 4)};
+        double z{bytesToFloat(datagram.data() + 8)};
+        double timestamp{bytesToFloat(datagram.data() + 12)};
 
-    xs.insert(timestamp, QCPData(timestamp, x));
-    ys->insert(timestamp, QCPData(timestamp, y));
-    zs.insert(timestamp, QCPData(timestamp, z));
+        xs.insert(timestamp, QCPData(timestamp, x));
+        ys->insert(timestamp, QCPData(timestamp, y));
+        zs.insert(timestamp, QCPData(timestamp, z));
 
-    if (y < currentMinY) {
-        currentMinY = y;
-    } else if (y > currentMaxY) {
-        currentMaxY = y;
+        if (y < currentMinY) {
+            currentMinY = y;
+        } else if (y > currentMaxY) {
+            currentMaxY = y;
+        }
+
+        plot->xAxis->setRange(ys->isEmpty() ? timestamp : ys->firstKey(), timestamp);
+        plot->yAxis->setRange(currentMinY, currentMaxY);
+
+        if (replot) {
+            plot->replot();
+        } else {
+            replot = false;
+        }
     }
-
-    plot->xAxis->setRange(ys->isEmpty() ? timestamp : ys->firstKey(), timestamp);
-    plot->yAxis->setRange(currentMinY, currentMaxY);
 }
 
 void Birdview::onConnectionButtonClicked()
