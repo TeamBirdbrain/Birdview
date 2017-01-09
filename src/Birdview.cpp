@@ -37,6 +37,8 @@ Birdview::Birdview()
     plot->graph()->setAdaptiveSampling(true);
     plot->xAxis->setLabel("Time");
     plot->yAxis->setLabel("Acceleration");
+    plot->xAxis->setRange(0, 1);
+    plot->yAxis->setRange(0, 1);
     plot->replot();
 
     // Pack layouts
