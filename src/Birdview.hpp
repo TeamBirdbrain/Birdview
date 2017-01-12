@@ -13,6 +13,7 @@
 #include <QColor>
 #include <QString>
 #include <QWidget>
+#include <QGroupBox>
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include <QPushButton>
@@ -42,6 +43,7 @@ private:
     double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
+    QGroupBox* groupsBox;
     QVBoxLayout* mainLayout;
     QPushButton* connectionButton;
 

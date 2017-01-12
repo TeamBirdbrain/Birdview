@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QRect>
 #include <QStyle>
+#include <QSplitter>
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
@@ -41,9 +42,28 @@ Birdview::Birdview()
     plot->yAxis->setRange(0, 1);
     plot->replot();
 
+    // Create control box
+    QWidget* groupsWidget{new QWidget()};
+    groupsBox = new QGroupBox("Groups");
+    QGroupBox* graphBox = new QGroupBox("Graph");
+
+    QSplitter* splitter{new QSplitter()};
+    splitter->addWidget(plot);
+    splitter->addWidget(groupsWidget);
+
     // Pack layouts
+    QVBoxLayout* groupsLayout{new QVBoxLayout()};
+    groupsLayout->addWidget(groupsBox);
+    groupsLayout->addWidget(graphBox);
+    groupsLayout->setStretch(0, 6);
+    groupsLayout->setStretch(1, 4);
+    groupsWidget->setLayout(groupsLayout);
+
+    splitter->setStretchFactor(0, 85);
+    splitter->setStretchFactor(1, 15);
+
     mainLayout->addWidget(connectionButton);
-    mainLayout->addWidget(plot);
+    mainLayout->addWidget(splitter);
 
     setLayout(mainLayout);
     setWindowTitle("Birdview");
