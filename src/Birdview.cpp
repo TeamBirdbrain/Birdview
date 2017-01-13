@@ -11,6 +11,8 @@
 #include <QFile>
 #include <QRect>
 #include <QStyle>
+#include <QLabel>
+#include <QComboBox>
 #include <QSplitter>
 #include <QTextStream>
 #include <QApplication>
@@ -31,7 +33,9 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::onConnectionButtonClicked);
 
+    xs = new QCPDataMap;
     ys = new QCPDataMap;
+    zs = new QCPDataMap;
     plot = new QCustomPlot;
     plot->addGraph();
     plot->graph()->setData(ys);
@@ -42,10 +46,19 @@ Birdview::Birdview()
     plot->yAxis->setRange(0, 1);
     plot->replot();
 
-    // Create control box
+    // Create group boxes
     QWidget* groupsWidget{new QWidget()};
     groupsBox = new QGroupBox("Groups");
+
     QGroupBox* graphBox = new QGroupBox("Graph");
+    QLabel* axisLabel{new QLabel("Axis:")};
+    QComboBox* axisComboBox{new QComboBox()};
+    axisComboBox->addItem("X");
+    axisComboBox->addItem("Y");
+    axisComboBox->addItem("Z");
+    axisComboBox->setCurrentIndex(1);
+    connect(axisComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, &Birdview::onAxisChanged);
 
     QSplitter* splitter{new QSplitter()};
     splitter->addWidget(plot);
@@ -58,6 +71,15 @@ Birdview::Birdview()
     groupsLayout->setStretch(0, 6);
     groupsLayout->setStretch(1, 4);
     groupsWidget->setLayout(groupsLayout);
+
+    QVBoxLayout* graphBoxLayout{new QVBoxLayout()};
+    QHBoxLayout* axisChooserLayout{new QHBoxLayout()};
+    axisChooserLayout->addWidget(axisLabel);
+    axisChooserLayout->addWidget(axisComboBox);
+    axisChooserLayout->setStretch(0, 2);
+    axisChooserLayout->setStretch(1, 8);
+    graphBoxLayout->addLayout(axisChooserLayout);
+    graphBox->setLayout(graphBoxLayout);
 
     splitter->setStretchFactor(0, 85);
     splitter->setStretchFactor(1, 15);
@@ -91,6 +113,12 @@ Birdview::~Birdview()
 {
     if (connected()) {
         deviceSocket.disconnectFromHost();
+    }
+
+    for (auto& dataMap : {xs, ys, zs}) {
+        if (plot->graph()->data() != dataMap) {
+            delete dataMap;
+        }
     }
 }
 
@@ -147,14 +175,28 @@ bool Birdview::exportData(QString file)
     QTextStream outputTextstream{&outputFile};
     outputTextstream << "timestamp x y z\n";
 
-    for (auto timestamp : xs.keys()) {
+    for (auto timestamp : xs->keys()) {
         outputTextstream << timestamp << " "
-                         << xs.value(timestamp).value << " "
+                         << xs->value(timestamp).value << " "
                          << ys->value(timestamp).value << " "
-                         << zs.value(timestamp).value << "\n";
+                         << zs->value(timestamp).value << "\n";
     }
 
     return true;
+}
+
+void Birdview::onAxisChanged(int index)
+{
+    QCPDataMap* dataMap{plot->graph()->data()};
+    if (index == 0) {
+        *dataMap = *xs;
+    } else if (index == 1) {
+        *dataMap = *ys;
+    } else if (index == 2) {
+        *dataMap = *zs;
+    }
+
+    plot->replot();
 }
 
 void Birdview::onDataReceived()
@@ -169,9 +211,9 @@ void Birdview::onDataReceived()
         double z{bytesToFloat(datagram.data() + 8)};
         double timestamp{bytesToFloat(datagram.data() + 12)};
 
-        xs.insert(timestamp, QCPData(timestamp, x));
+        xs->insert(timestamp, QCPData(timestamp, x));
         ys->insert(timestamp, QCPData(timestamp, y));
-        zs.insert(timestamp, QCPData(timestamp, z));
+        zs->insert(timestamp, QCPData(timestamp, z));
 
         if (y < currentMinY) {
             currentMinY = y;
@@ -179,7 +221,8 @@ void Birdview::onDataReceived()
             currentMaxY = y;
         }
 
-        plot->xAxis->setRange(ys->isEmpty() ? timestamp : ys->firstKey(), timestamp);
+        QCPDataMap* dataMap{plot->graph()->data()};
+        plot->xAxis->setRange(dataMap->isEmpty() ? timestamp : dataMap->firstKey(), timestamp);
         plot->yAxis->setRange(currentMinY, currentMaxY);
 
         if (replot) {

@@ -36,9 +36,9 @@ private:
     void setConnected(bool);
     float bytesToFloat(char*);
 
-    QCPDataMap xs;
+    QCPDataMap* xs;
     QCPDataMap* ys;
-    QCPDataMap zs;
+    QCPDataMap* zs;
     double currentMaxY{std::numeric_limits<double>::min()};
     double currentMinY{std::numeric_limits<double>::max()};
 
@@ -58,6 +58,7 @@ private:
 
 private slots:
     void onDataReceived();
+    void onAxisChanged(int);
     void onConnectionButtonClicked();
     void onSocketError(QTcpSocket::SocketError);
 };
