@@ -45,9 +45,11 @@ private:
     QCustomPlot* plot;
     QGroupBox* groupsBox;
     QVBoxLayout* mainLayout;
+    QPushButton* recordButton;
     QPushButton* connectionButton;
 
     bool replot;
+    bool recording;
     QString deviceIP;
     QTcpSocket deviceSocket;
     QUdpSocket deviceDataSocket;
@@ -58,6 +60,7 @@ private:
 
 private slots:
     void onDataReceived();
+    void onRecordClicked();
     void onAxisChanged(int);
     void onConnectionButtonClicked();
     void onSocketError(QTcpSocket::SocketError);

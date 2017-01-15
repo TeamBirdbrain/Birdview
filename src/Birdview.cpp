@@ -8,7 +8,9 @@
 #include <iostream>
 
 #include <Qt>
+#include <QIcon>
 #include <QFile>
+#include <QSize>
 #include <QRect>
 #include <QStyle>
 #include <QLabel>
@@ -38,7 +40,6 @@ Birdview::Birdview()
     zs = new QCPDataMap;
     plot = new QCustomPlot;
     plot->addGraph();
-    plot->graph()->setData(ys);
     plot->graph()->setAdaptiveSampling(true);
     plot->xAxis->setLabel("Time");
     plot->yAxis->setLabel("Acceleration");
@@ -64,6 +65,12 @@ Birdview::Birdview()
     splitter->addWidget(plot);
     splitter->addWidget(groupsWidget);
 
+    recordButton = new QPushButton();
+    recordButton->setIcon(QIcon(":/start-record-icon"));
+    recordButton->setIconSize(QSize(50, 50));
+    connect(recordButton, &QPushButton::clicked,
+            this, &Birdview::onRecordClicked);
+
     // Pack layouts
     QVBoxLayout* groupsLayout{new QVBoxLayout()};
     groupsLayout->addWidget(groupsBox);
@@ -78,11 +85,13 @@ Birdview::Birdview()
     axisChooserLayout->addWidget(axisComboBox);
     axisChooserLayout->setStretch(0, 2);
     axisChooserLayout->setStretch(1, 8);
+    graphBoxLayout->addWidget(recordButton);
+    graphBoxLayout->setAlignment(recordButton, Qt::AlignHCenter);
     graphBoxLayout->addLayout(axisChooserLayout);
     graphBox->setLayout(graphBoxLayout);
 
-    splitter->setStretchFactor(0, 85);
-    splitter->setStretchFactor(1, 15);
+    splitter->setStretchFactor(0, 90);
+    splitter->setStretchFactor(1, 10);
 
     mainLayout->addWidget(connectionButton);
     mainLayout->addWidget(splitter);
@@ -103,8 +112,9 @@ Birdview::Birdview()
                                                 desktopWidget->availableGeometry()));
 
     // Start off in a disconnected state
-    setConnected(false);
     replot = true;
+    recording = false;
+    setConnected(false);
     connect(&deviceSocket, static_cast<void(QTcpSocket::*)(QTcpSocket::SocketError)>(&QTcpSocket::error),
             this, &Birdview::onSocketError);
 }
@@ -141,6 +151,7 @@ void Birdview::setConnected(bool state)
         deviceDataSocket.close();
         std::cout << "Disconnected" << std::endl;
     }
+    recordButton->setEnabled(state);
 
     QColor buttonColor{state ? buttonGreen : buttonRed};
     QString buttonText{state ? "Connected to " + deviceIP : "Disconnected"};
@@ -206,31 +217,38 @@ void Birdview::onDataReceived()
         datagram.resize(deviceDataSocket.pendingDatagramSize());
         deviceDataSocket.readDatagram(datagram.data(), datagram.size());
 
-        double x{bytesToFloat(datagram.data())};
-        double y{bytesToFloat(datagram.data() + 4)};
-        double z{bytesToFloat(datagram.data() + 8)};
-        double timestamp{bytesToFloat(datagram.data() + 12)};
+        if (recording) {
+            double x{bytesToFloat(datagram.data())};
+            double y{bytesToFloat(datagram.data() + 4)};
+            double z{bytesToFloat(datagram.data() + 8)};
+            double timestamp{bytesToFloat(datagram.data() + 12)};
 
-        xs->insert(timestamp, QCPData(timestamp, x));
-        ys->insert(timestamp, QCPData(timestamp, y));
-        zs->insert(timestamp, QCPData(timestamp, z));
+            xs->insert(timestamp, QCPData(timestamp, x));
+            ys->insert(timestamp, QCPData(timestamp, y));
+            zs->insert(timestamp, QCPData(timestamp, z));
 
-        if (y < currentMinY) {
-            currentMinY = y;
-        } else if (y > currentMaxY) {
-            currentMaxY = y;
-        }
+            if (y < currentMinY) {
+                currentMinY = y;
+            } else if (y > currentMaxY) {
+                currentMaxY = y;
+            }
 
-        QCPDataMap* dataMap{plot->graph()->data()};
-        plot->xAxis->setRange(dataMap->isEmpty() ? timestamp : dataMap->firstKey(), timestamp);
-        plot->yAxis->setRange(currentMinY, currentMaxY);
+            QCPDataMap* dataMap{plot->graph()->data()};
+            plot->xAxis->setRange(dataMap->isEmpty() ? timestamp : dataMap->firstKey(), timestamp);
+            plot->yAxis->setRange(currentMinY, currentMaxY);
 
-        if (replot) {
-            plot->replot();
-        } else {
-            replot = false;
+            replot = !replot;
+            if (replot) {
+                plot->replot();
+            }
         }
     }
+}
+
+void Birdview::onRecordClicked()
+{
+    recording = !recording;
+    recordButton->setIcon(QIcon(recording ? ":/stop-record-icon" : ":/start-record-icon"));
 }
 
 void Birdview::onConnectionButtonClicked()

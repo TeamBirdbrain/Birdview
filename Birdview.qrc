@@ -1,0 +1,7 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+  <qresource>
+    <file alias="start-record-icon">icons/start-record.svg</file>
+    <file alias="stop-record-icon">icons/stop-record.svg</file>
+  </qresource>
+</RCC>
