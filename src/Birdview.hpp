@@ -18,7 +18,11 @@
 #include <QUdpSocket>
 #include <QPushButton>
 #include <QVBoxLayout>
-#include <qcustomplot.h>
+#include <QSharedPointer>
+
+#include "../qcustomplot/qcustomplot.h"
+
+using Birdcage = QSharedPointer<QCPGraphDataContainer>;
 
 class Birdview : public QWidget
 {
@@ -36,9 +40,9 @@ private:
     void setConnected(bool);
     float bytesToFloat(char*);
 
-    QCPDataMap* xs;
-    QCPDataMap* ys;
-    QCPDataMap* zs;
+    Birdcage xs;
+    Birdcage ys;
+    Birdcage zs;
     double currentMaxY{std::numeric_limits<double>::min()};
     double currentMinY{std::numeric_limits<double>::max()};
 

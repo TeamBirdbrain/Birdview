@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2017 Te Ropu Awhina (Victoria University of Wellington)
  *
  * This software may be modified and distributed under the terms
@@ -35,9 +35,9 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::onConnectionButtonClicked);
 
-    xs = new QCPDataMap;
-    ys = new QCPDataMap;
-    zs = new QCPDataMap;
+    xs = Birdcage();
+    ys = Birdcage();
+    zs = Birdcage();
     plot = new QCustomPlot;
     plot->addGraph();
     plot->graph()->setAdaptiveSampling(true);
@@ -124,12 +124,6 @@ Birdview::~Birdview()
     if (connected()) {
         deviceSocket.disconnectFromHost();
     }
-
-    for (auto& dataMap : {xs, ys, zs}) {
-        if (plot->graph()->data() != dataMap) {
-            delete dataMap;
-        }
-    }
 }
 
 bool Birdview::connected()
@@ -186,11 +180,14 @@ bool Birdview::exportData(QString file)
     QTextStream outputTextstream{&outputFile};
     outputTextstream << "timestamp x y z\n";
 
-    for (auto timestamp : xs->keys()) {
-        outputTextstream << timestamp << " "
-                         << xs->value(timestamp).value << " "
-                         << ys->value(timestamp).value << " "
-                         << zs->value(timestamp).value << "\n";
+    auto xs_it{xs->constBegin()};
+    auto ys_it{ys->constBegin()};
+    auto zs_it{zs->constBegin()};
+    for (; xs_it != xs->constEnd(); ++xs_it, ++ys_it, ++zs_it) {
+        outputTextstream << xs_it->key << " "
+                         << xs_it->value << " "
+                         << ys_it->value << " "
+                         << zs_it->value << "\n";
     }
 
     return true;
@@ -198,13 +195,12 @@ bool Birdview::exportData(QString file)
 
 void Birdview::onAxisChanged(int index)
 {
-    QCPDataMap* dataMap{plot->graph()->data()};
     if (index == 0) {
-        *dataMap = *xs;
+        plot->graph()->setData(xs);
     } else if (index == 1) {
-        *dataMap = *ys;
+        plot->graph()->setData(ys);
     } else if (index == 2) {
-        *dataMap = *zs;
+        plot->graph()->setData(zs);
     }
 
     plot->replot();
@@ -223,9 +219,9 @@ void Birdview::onDataReceived()
             double z{bytesToFloat(datagram.data() + 8)};
             double timestamp{bytesToFloat(datagram.data() + 12)};
 
-            xs->insert(timestamp, QCPData(timestamp, x));
-            ys->insert(timestamp, QCPData(timestamp, y));
-            zs->insert(timestamp, QCPData(timestamp, z));
+            xs->add(QCPGraphData(timestamp, x));
+            ys->add(QCPGraphData(timestamp, y));
+            zs->add(QCPGraphData(timestamp, z));
 
             if (y < currentMinY) {
                 currentMinY = y;
@@ -233,13 +229,20 @@ void Birdview::onDataReceived()
                 currentMaxY = y;
             }
 
-            QCPDataMap* dataMap{plot->graph()->data()};
-            plot->xAxis->setRange(dataMap->isEmpty() ? timestamp : dataMap->firstKey(), timestamp);
-            plot->yAxis->setRange(currentMinY, currentMaxY);
+            bool xRangeFound{false};
+            bool yRangeFound{false};
+            auto dataMap{plot->graph()->data()};
+            auto xRange{dataMap->keyRange(xRangeFound)};
+            auto yRange{dataMap->valueRange(yRangeFound)};
 
-            replot = !replot;
-            if (replot) {
-                plot->replot();
+            if (xRangeFound && yRangeFound) {
+                plot->xAxis->setRange(xRange);
+                plot->yAxis->setRange(yRange);
+
+                replot = !replot;
+                if (replot) {
+                    plot->replot();
+                }
             }
         }
     }
