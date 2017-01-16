@@ -38,7 +38,7 @@ private:
     bool connected();
     bool exportData(QString);
     void setConnected(bool);
-    float bytesToFloat(char*);
+    double bytesToFloat(char*);
 
     Birdcage xs;
     Birdcage ys;

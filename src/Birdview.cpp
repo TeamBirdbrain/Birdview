@@ -158,7 +158,7 @@ void Birdview::setConnected(bool state)
                                     "QPushButton:pressed { background-color: " + buttonColor.darker(120).name() + "; }");
 }
 
-float Birdview::bytesToFloat(char* data)
+double Birdview::bytesToFloat(char* data)
 {
     // Note that `data` is big endian (network byte order)
     const std::size_t size{sizeof(float)};
@@ -167,7 +167,7 @@ float Birdview::bytesToFloat(char* data)
         bytes[i] = data[size - i - 1];
     }
 
-    return value;
+    return static_cast<double>(value);
 }
 
 bool Birdview::exportData(QString file)
