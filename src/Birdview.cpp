@@ -15,10 +15,12 @@
 #include <QStyle>
 #include <QLabel>
 #include <QComboBox>
+#include <QShortcut>
 #include <QSplitter>
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
+#include <QKeySequence>
 #include <QDesktopWidget>
 
 #include "Birdview.hpp"
@@ -33,7 +35,7 @@ Birdview::Birdview()
     connectionButton = new QPushButton;
     connectionButton->setFlat(true);
     connect(connectionButton, &QPushButton::clicked,
-            this, &Birdview::onConnectionButtonClicked);
+            this, &Birdview::toggleConnection);
 
     xs = Birdcage();
     ys = Birdcage();
@@ -69,7 +71,7 @@ Birdview::Birdview()
     recordButton->setIcon(QIcon(":/start-record-icon"));
     recordButton->setIconSize(QSize(50, 50));
     connect(recordButton, &QPushButton::clicked,
-            this, &Birdview::onRecordClicked);
+            this, &Birdview::toggleRecord);
 
     // Pack layouts
     QVBoxLayout* groupsLayout{new QVBoxLayout()};
@@ -110,6 +112,17 @@ Birdview::Birdview()
                                                 Qt::AlignCenter,
                                                 size(),
                                                 desktopWidget->availableGeometry()));
+
+    // Create shortcuts
+    QShortcut* recordShortcut{new QShortcut(QKeySequence("R"), this)};
+    QShortcut* connectShortcut{new QShortcut(QKeySequence("C"), this)};
+    QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl + Q"), this)};
+    connect(recordShortcut, &QShortcut::activated,
+            this, &Birdview::toggleRecord);
+    connect(connectShortcut, &QShortcut::activated,
+            this, &Birdview::toggleConnection);
+    connect(quitShortcut, &QShortcut::activated,
+            this, &Birdview::close);
 
     // Start off in a disconnected state
     replot = true;
@@ -248,13 +261,13 @@ void Birdview::onDataReceived()
     }
 }
 
-void Birdview::onRecordClicked()
+void Birdview::toggleRecord()
 {
     recording = !recording;
     recordButton->setIcon(QIcon(recording ? ":/stop-record-icon" : ":/start-record-icon"));
 }
 
-void Birdview::onConnectionButtonClicked()
+void Birdview::toggleConnection()
 {
     if (connected()) {
         setConnected(false);

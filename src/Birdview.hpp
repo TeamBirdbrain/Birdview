@@ -63,10 +63,11 @@ private:
     const QColor buttonGreen{"#47B84B"};
 
 private slots:
+    void toggleRecord();
+    void toggleConnection();
+
     void onDataReceived();
-    void onRecordClicked();
     void onAxisChanged(int);
-    void onConnectionButtonClicked();
     void onSocketError(QTcpSocket::SocketError);
 };
 
