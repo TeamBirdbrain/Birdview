@@ -116,7 +116,7 @@ Birdview::Birdview()
     // Create shortcuts
     QShortcut* recordShortcut{new QShortcut(QKeySequence("R"), this)};
     QShortcut* connectShortcut{new QShortcut(QKeySequence("C"), this)};
-    QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl + Q"), this)};
+    QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl+Q"), this)};
     connect(recordShortcut, &QShortcut::activated,
             this, &Birdview::toggleRecord);
     connect(connectShortcut, &QShortcut::activated,
