@@ -139,7 +139,7 @@ Birdview::~Birdview()
     }
 }
 
-bool Birdview::connected()
+bool Birdview::connected() const
 {
     return deviceSocket.state() == QAbstractSocket::ConnectedState;
 }
@@ -171,7 +171,7 @@ void Birdview::setConnected(bool state)
                                     "QPushButton:pressed { background-color: " + buttonColor.darker(120).name() + "; }");
 }
 
-double Birdview::bytesToFloat(char* data)
+double Birdview::bytesToFloat(char* data) const
 {
     // Note that `data` is big endian (network byte order)
     const std::size_t size{sizeof(float)};
@@ -183,7 +183,7 @@ double Birdview::bytesToFloat(char* data)
     return static_cast<double>(value);
 }
 
-bool Birdview::exportData(QString file)
+bool Birdview::exportData(QString file) const
 {
     QFile outputFile{file};
     if (!outputFile.open(QIODevice::WriteOnly)) {

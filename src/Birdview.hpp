@@ -35,10 +35,10 @@ public:
     static const int PORT = 1998;
 
 private:
-    bool connected();
-    bool exportData(QString);
+    bool connected() const;
+    bool exportData(QString) const;
     void setConnected(bool);
-    double bytesToFloat(char*);
+    double bytesToFloat(char*) const;
 
     Birdcage xs;
     Birdcage ys;
