@@ -92,6 +92,7 @@ Birdview::Birdview()
     graphBoxLayout->addLayout(axisChooserLayout);
     graphBox->setLayout(graphBoxLayout);
 
+    splitter->setCollapsible(1, false);
     splitter->setStretchFactor(0, 90);
     splitter->setStretchFactor(1, 10);
 
