@@ -16,7 +16,6 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QShortcut>
-#include <QSplitter>
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
@@ -63,7 +62,7 @@ Birdview::Birdview()
     connect(axisComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &Birdview::onAxisChanged);
 
-    QSplitter* splitter{new QSplitter()};
+    splitter = new QSplitter();
     splitter->addWidget(plot);
     splitter->addWidget(groupsWidget);
 
@@ -117,11 +116,14 @@ Birdview::Birdview()
     // Create shortcuts
     QShortcut* recordShortcut{new QShortcut(QKeySequence("R"), this)};
     QShortcut* connectShortcut{new QShortcut(QKeySequence("C"), this)};
+	QShortcut* toolbarShortcut{new QShortcut(QKeySequence("T"), this)};
     QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl+Q"), this)};
     connect(recordShortcut, &QShortcut::activated,
             this, &Birdview::toggleRecord);
     connect(connectShortcut, &QShortcut::activated,
             this, &Birdview::toggleConnection);
+	connect(toolbarShortcut, &QShortcut::activated,
+			this, &Birdview::toggleToolbar);
     connect(quitShortcut, &QShortcut::activated,
             this, &Birdview::close);
 
@@ -266,6 +268,18 @@ void Birdview::toggleRecord()
 {
     recording = !recording;
     recordButton->setIcon(QIcon(recording ? ":/stop-record-icon" : ":/start-record-icon"));
+}
+
+void Birdview::toggleToolbar()
+{
+	QWidget* toolbar{splitter->widget(1)};
+	QSize toolbarSize{toolbar->size()};
+
+	if (toolbar->isVisible()) {
+		toolbar->hide();
+	} else {
+		toolbar->show();
+	}
 }
 
 void Birdview::toggleConnection()

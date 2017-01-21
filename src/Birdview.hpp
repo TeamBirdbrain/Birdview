@@ -14,6 +14,7 @@
 #include <QString>
 #include <QWidget>
 #include <QGroupBox>
+#include <QSplitter>
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include <QPushButton>
@@ -47,6 +48,7 @@ private:
     double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
+	QSplitter* splitter;
     QGroupBox* groupsBox;
     QVBoxLayout* mainLayout;
     QPushButton* recordButton;
@@ -64,6 +66,7 @@ private:
 
 private slots:
     void toggleRecord();
+	void toggleToolbar();
     void toggleConnection();
 
     void onDataReceived();
