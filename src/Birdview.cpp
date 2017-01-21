@@ -37,9 +37,9 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::toggleConnection);
 
-    xs = Birdcage();
-    ys = Birdcage();
-    zs = Birdcage();
+    xs = QSharedPointer<QCPGraphDataContainer>::create();
+    ys = QSharedPointer<QCPGraphDataContainer>::create();
+    zs = QSharedPointer<QCPGraphDataContainer>::create();
     plot = new QCustomPlot;
     plot->addGraph();
     plot->graph()->setAdaptiveSampling(true);
