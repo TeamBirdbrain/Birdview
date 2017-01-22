@@ -36,9 +36,10 @@ public:
     static const int PORT = 1998;
 
 private:
+    void setConnected(bool);
+
     bool connected() const;
     bool exportData(QString) const;
-    void setConnected(bool);
     double bytesToFloat(char*) const;
 
     Birdcage xs;
@@ -48,7 +49,7 @@ private:
     double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
-	QSplitter* splitter;
+    QSplitter* splitter;
     QGroupBox* groupsBox;
     QVBoxLayout* mainLayout;
     QPushButton* recordButton;
@@ -66,7 +67,7 @@ private:
 
 private slots:
     void toggleRecord();
-	void toggleToolbar();
+    void toggleToolbar();
     void toggleConnection();
 
     void onDataReceived();
