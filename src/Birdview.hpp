@@ -66,6 +66,8 @@ private:
     const QColor buttonGreen{"#47B84B"};
 
 private slots:
+    void deleteData();
+
     void toggleRecord();
     void toggleToolbar();
     void toggleConnection();

@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QShortcut>
+#include <QMessageBox>
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
@@ -114,10 +115,13 @@ Birdview::Birdview()
                                                 desktopWidget->availableGeometry()));
 
     // Create shortcuts
+    QShortcut* deleteShortcut{new QShortcut(QKeySequence("D"), this)};
     QShortcut* recordShortcut{new QShortcut(QKeySequence("R"), this)};
     QShortcut* connectShortcut{new QShortcut(QKeySequence("C"), this)};
     QShortcut* toolbarShortcut{new QShortcut(QKeySequence("T"), this)};
     QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl+Q"), this)};
+    connect(deleteShortcut, &QShortcut::activated,
+            this, &Birdview::deleteData);
     connect(recordShortcut, &QShortcut::activated,
             this, &Birdview::toggleRecord);
     connect(connectShortcut, &QShortcut::activated,
@@ -184,6 +188,27 @@ double Birdview::bytesToFloat(char* data) const
     }
 
     return static_cast<double>(value);
+}
+
+void Birdview::deleteData()
+{
+    int result{QMessageBox::warning(this, "Delete data", 
+                                    "Are you sure you wish to delete this data?",
+                                    QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)};
+
+    if (result == QMessageBox::Yes) {
+        if (recording) {
+            toggleRecord();
+        }
+
+        xs->clear();
+        ys->clear();
+        zs->clear();
+
+        plot->xAxis->setRange(0, 1);
+        plot->yAxis->setRange(0, 1);
+        plot->replot();
+    }
 }
 
 bool Birdview::exportData(QString file) const
