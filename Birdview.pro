@@ -8,7 +8,7 @@ TEMPLATE = app
 TARGET = Birdview
 RESOURCES = Birdview.qrc
 INCLUDEPATH += .
-QMAKE_CXXFLAGS += -Wfatal-errors
+!win32:QMAKE_CXXFLAGS += -Wfatal-errors
 
 # Input
 HEADERS += src/Birdview.hpp \

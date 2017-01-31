@@ -16,6 +16,10 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QShortcut>
+<<<<<<< HEAD
+=======
+#include <QMessageBox>
+>>>>>>> 0ff4fa70bbbce4547a9284c086caaace1ce005c5
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
@@ -36,9 +40,9 @@ Birdview::Birdview()
     connect(connectionButton, &QPushButton::clicked,
             this, &Birdview::toggleConnection);
 
-    xs = Birdcage();
-    ys = Birdcage();
-    zs = Birdcage();
+    xs = QSharedPointer<QCPGraphDataContainer>::create();
+    ys = QSharedPointer<QCPGraphDataContainer>::create();
+    zs = QSharedPointer<QCPGraphDataContainer>::create();
     plot = new QCustomPlot;
     plot->addGraph();
     plot->graph()->setAdaptiveSampling(true);
@@ -114,13 +118,19 @@ Birdview::Birdview()
                                                 desktopWidget->availableGeometry()));
 
     // Create shortcuts
+    QShortcut* deleteShortcut{new QShortcut(QKeySequence("D"), this)};
     QShortcut* recordShortcut{new QShortcut(QKeySequence("R"), this)};
     QShortcut* connectShortcut{new QShortcut(QKeySequence("C"), this)};
+    QShortcut* toolbarShortcut{new QShortcut(QKeySequence("T"), this)};
     QShortcut* quitShortcut{new QShortcut(QKeySequence("Ctrl+Q"), this)};
+    connect(deleteShortcut, &QShortcut::activated,
+            this, &Birdview::deleteData);
     connect(recordShortcut, &QShortcut::activated,
             this, &Birdview::toggleRecord);
     connect(connectShortcut, &QShortcut::activated,
             this, &Birdview::toggleConnection);
+    connect(toolbarShortcut, &QShortcut::activated,
+            this, &Birdview::toggleToolbar);
     connect(quitShortcut, &QShortcut::activated,
             this, &Birdview::close);
 
@@ -183,6 +193,27 @@ double Birdview::bytesToFloat(char* data) const
     return static_cast<double>(value);
 }
 
+void Birdview::deleteData()
+{
+    int result{QMessageBox::warning(this, "Delete data", 
+                                    "Are you sure you wish to delete this data?",
+                                    QMessageBox::Yes, QMessageBox::No | QMessageBox::Default)};
+
+    if (result == QMessageBox::Yes) {
+        if (recording) {
+            toggleRecord();
+        }
+
+        xs->clear();
+        ys->clear();
+        zs->clear();
+
+        plot->xAxis->setRange(0, 1);
+        plot->yAxis->setRange(0, 1);
+        plot->replot();
+    }
+}
+
 bool Birdview::exportData(QString file) const
 {
     QFile outputFile{file};
@@ -241,12 +272,6 @@ void Birdview::onDataReceived()
             ys->add(QCPGraphData(timestamp, y));
             zs->add(QCPGraphData(timestamp, z));
 
-            if (y < currentMinY) {
-                currentMinY = y;
-            } else if (y > currentMaxY) {
-                currentMaxY = y;
-            }
-
             bool xRangeFound{false};
             bool yRangeFound{false};
             auto dataMap{plot->graph()->data()};
@@ -270,6 +295,18 @@ void Birdview::toggleRecord()
 {
     recording = !recording;
     recordButton->setIcon(QIcon(recording ? ":/stop-record-icon" : ":/start-record-icon"));
+}
+
+void Birdview::toggleToolbar()
+{
+    QWidget* toolbar{splitter->widget(1)};
+    QSize toolbarSize{toolbar->size()};
+
+    if (toolbar->isVisible()) {
+        toolbar->hide();
+    } else {
+        toolbar->show();
+    }
 }
 
 void Birdview::toggleConnection()

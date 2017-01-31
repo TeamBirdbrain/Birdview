@@ -40,17 +40,16 @@ public:
     static const int PORT = 1998;
 
 private:
+    void setConnected(bool);
+
     bool connected() const;
     bool exportData(QString) const;
-    void setConnected(bool);
     double bytesToFloat(char*) const;
 
     Birdcage xs;
     Birdcage ys;
     Birdcage zs;
     std::vector<Flock> flocks;
-    double currentMaxY{std::numeric_limits<double>::min()};
-    double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
     QSplitter* splitter;
@@ -71,8 +70,10 @@ private:
 
 private slots:
     void addFlock();
+    void deleteData();
 
     void toggleRecord();
+    void toggleToolbar();
     void toggleConnection();
 
     void onDataReceived();
