@@ -8,12 +8,15 @@
 #ifndef BIRDVIEW_HPP
 #define BIRDVIEW_HPP
 
+#include <tuple>
 #include <limits>
+#include <vector>
 
 #include <QColor>
 #include <QString>
 #include <QWidget>
 #include <QGroupBox>
+#include <QSplitter>
 #include <QTcpSocket>
 #include <QUdpSocket>
 #include <QPushButton>
@@ -23,6 +26,8 @@
 #include "../qcustomplot/qcustomplot.h"
 
 using Birdcage = QSharedPointer<QCPGraphDataContainer>;
+
+using Flock = std::tuple<QCPGraph*, QCPGraph*, QCPGraph*>;
 
 class Birdview : public QWidget
 {
@@ -43,10 +48,12 @@ private:
     Birdcage xs;
     Birdcage ys;
     Birdcage zs;
+    std::vector<Flock> flocks;
     double currentMaxY{std::numeric_limits<double>::min()};
     double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
+    QSplitter* splitter;
     QGroupBox* groupsBox;
     QVBoxLayout* mainLayout;
     QPushButton* recordButton;
@@ -63,6 +70,8 @@ private:
     const QColor buttonGreen{"#47B84B"};
 
 private slots:
+    void addFlock();
+
     void toggleRecord();
     void toggleConnection();
 

@@ -16,7 +16,6 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QShortcut>
-#include <QSplitter>
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
@@ -63,7 +62,7 @@ Birdview::Birdview()
     connect(axisComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, &Birdview::onAxisChanged);
 
-    QSplitter* splitter{new QSplitter()};
+    splitter = new QSplitter();
     splitter->addWidget(plot);
     splitter->addWidget(groupsWidget);
 
@@ -205,6 +204,11 @@ bool Birdview::exportData(QString file) const
     }
 
     return true;
+}
+
+void Birdview::addFlock()
+{
+    QCPGraph* new_xs{plot->addLayer()}
 }
 
 void Birdview::onAxisChanged(int index)
