@@ -16,10 +16,7 @@
 #include <QLabel>
 #include <QComboBox>
 #include <QShortcut>
-<<<<<<< HEAD
-=======
 #include <QMessageBox>
->>>>>>> 0ff4fa70bbbce4547a9284c086caaace1ce005c5
 #include <QTextStream>
 #include <QApplication>
 #include <QInputDialog>
