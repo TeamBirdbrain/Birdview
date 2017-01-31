@@ -45,8 +45,6 @@ private:
     Birdcage xs;
     Birdcage ys;
     Birdcage zs;
-    double currentMaxY{std::numeric_limits<double>::min()};
-    double currentMinY{std::numeric_limits<double>::max()};
 
     QCustomPlot* plot;
     QSplitter* splitter;

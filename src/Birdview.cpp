@@ -264,12 +264,6 @@ void Birdview::onDataReceived()
             ys->add(QCPGraphData(timestamp, y));
             zs->add(QCPGraphData(timestamp, z));
 
-            if (y < currentMinY) {
-                currentMinY = y;
-            } else if (y > currentMaxY) {
-                currentMaxY = y;
-            }
-
             bool xRangeFound{false};
             bool yRangeFound{false};
             auto dataMap{plot->graph()->data()};
