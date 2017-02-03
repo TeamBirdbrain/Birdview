@@ -54,7 +54,7 @@ private:
     QCustomPlot* plot;
     QSplitter* splitter;
     QGroupBox* groupsBox;
-    QVBoxLayout* mainLayout;
+    QVBoxLayout* groupsLayout;
     QPushButton* recordButton;
     QPushButton* connectionButton;
 

@@ -29,7 +29,11 @@
 Birdview::Birdview()
 {
     // Create layouts
-    mainLayout = new QVBoxLayout;
+    groupsLayout = new QVBoxLayout();
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+    QVBoxLayout* toolbarLayout{new QVBoxLayout()};
+    QVBoxLayout* graphBoxLayout{new QVBoxLayout()};
+    QHBoxLayout* axisChooserLayout{new QHBoxLayout()};
 
     // Create widgets
     connectionButton = new QPushButton;
@@ -50,7 +54,7 @@ Birdview::Birdview()
     plot->replot();
 
     // Create group boxes
-    QWidget* groupsWidget{new QWidget()};
+    QWidget* toolbarWidget{new QWidget()};
     groupsBox = new QGroupBox("Groups");
 
     QGroupBox* graphBox = new QGroupBox("Graph");
@@ -65,7 +69,7 @@ Birdview::Birdview()
 
     splitter = new QSplitter();
     splitter->addWidget(plot);
-    splitter->addWidget(groupsWidget);
+    splitter->addWidget(toolbarWidget);
 
     recordButton = new QPushButton();
     recordButton->setIcon(QIcon(":/start-record-icon"));
@@ -74,15 +78,14 @@ Birdview::Birdview()
             this, &Birdview::toggleRecord);
 
     // Pack layouts
-    QVBoxLayout* groupsLayout{new QVBoxLayout()};
-    groupsLayout->addWidget(groupsBox);
-    groupsLayout->addWidget(graphBox);
-    groupsLayout->setStretch(0, 6);
-    groupsLayout->setStretch(1, 4);
-    groupsWidget->setLayout(groupsLayout);
+    toolbarLayout->addWidget(groupsBox);
+    toolbarLayout->addWidget(graphBox);
+    toolbarLayout->setStretch(0, 6);
+    toolbarLayout->setStretch(1, 4);
+    toolbarWidget->setLayout(toolbarLayout);
 
-    QVBoxLayout* graphBoxLayout{new QVBoxLayout()};
-    QHBoxLayout* axisChooserLayout{new QHBoxLayout()};
+    groupsBox->setLayout(groupsLayout);
+
     axisChooserLayout->addWidget(axisLabel);
     axisChooserLayout->addWidget(axisComboBox);
     axisChooserLayout->setStretch(0, 2);
